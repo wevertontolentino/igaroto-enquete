@@ -54,8 +54,66 @@ const translations = {
     resetPoll: "Zerar Votos da Enquete",
     resetConfirm: "Tem certeza que deseja zerar todos os votos desta enquete? Esta ação não pode ser desfeita.",
   },
-  en: { /* ... traduções em inglês ... */ },
-  es: { /* ... traduções em espanhol ... */ },
+  en: {
+    title: "Which model do you want to see on IGAROTO's feed tomorrow?",
+    vote: "Vote",
+    comments: "Comments",
+    nickname: "Nickname (optional)",
+    commentPlaceholder: "Write your comment...",
+    submitComment: "Comment",
+    adminPanel: "Admin Panel",
+    adminTitle: "Content Management",
+    model1Name: "Model 1 Name:",
+    model1Photo: "Model 1 Photo URL:",
+    model2Name: "Model 2 Name:",
+    model2Photo: "Model 2 Photo URL:",
+    saveChanges: "Save Changes",
+    adminButton: "Admin",
+    loading: "Loading poll...",
+    loginTitle: "Admin Access",
+    emailLabel: "Email",
+    passwordLabel: "Password",
+    loginButton: "Login",
+    logoutButton: "Logout",
+    loginError: "Incorrect email or password.",
+    socialShare: "Share the poll!",
+    shareOnInstagram: "Share on Instagram",
+    instagramInstruction: "Instagram doesn't allow direct sharing to Stories from websites. Take a screenshot of the poll and use the text below!",
+    copyText: "Copy Text",
+    copied: "Copied!",
+    resetPoll: "Reset Poll Votes",
+    resetConfirm: "Are you sure you want to reset all votes for this poll? This action cannot be undone.",
+  },
+  es: {
+    title: "¿Qué modelo quieres ver mañana en el feed de IGAROTO?",
+    vote: "Votar",
+    comments: "Comentarios",
+    nickname: "Apodo (opcional)",
+    commentPlaceholder: "Escribe tu comentario...",
+    submitComment: "Comentar",
+    adminPanel: "Panel de Administración",
+    adminTitle: "Gestión de Contenido",
+    model1Name: "Nombre del Modelo 1:",
+    model1Photo: "URL de la Foto del Modelo 1:",
+    model2Name: "Nombre del Modelo 2:",
+    model2Photo: "URL de la Foto del Modelo 2:",
+    saveChanges: "Guardar Cambios",
+    adminButton: "Admin",
+    loading: "Cargando encuesta...",
+    loginTitle: "Acceso Administrativo",
+    emailLabel: "Email",
+    passwordLabel: "Contraseña",
+    loginButton: "Entrar",
+    logoutButton: "Salir",
+    loginError: "Email o contraseña incorrectos.",
+    socialShare: "¡Comparte la encuesta!",
+    shareOnInstagram: "Compartir en Instagram",
+    instagramInstruction: "Instagram no permite compartir directamente en Stories desde sitios web. ¡Toma una captura de pantalla de la encuesta y usa el texto a continuación!",
+    copyText: "Copiar Texto",
+    copied: "¡Copiado!",
+    resetPoll: "Reiniciar Votos de la Encuesta",
+    resetConfirm: "¿Estás seguro de que quieres reiniciar todos los votos de esta encuesta? Esta acción no se puede deshacer.",
+  },
 };
 
 // --- COMPONENTES ---
@@ -114,7 +172,7 @@ const PollSite = ({ user, t, language, setLanguage }) => {
   useEffect(() => {
     // Identificador único da enquete, baseado nos nomes e fotos
     const getPollId = (data) => {
-        if (!data) return 'default';
+        if (!data || !data.model1 || !data.model2) return 'default';
         return `poll_${data.model1.name}_${data.model2.name}`.replace(/\s+/g, '');
     }
 
@@ -180,27 +238,43 @@ const PollSite = ({ user, t, language, setLanguage }) => {
         'model2.name': formData.get('model2Name'),
         'model2.photo': formData.get('model2PhotoURL'),
       });
+       // Quando salvamos uma nova enquete, limpamos o ID de voto antigo
+      localStorage.removeItem('votedPollId');
+      setVoted(false);
     } catch (error) { console.error("Erro ao salvar alterações:", error); } 
     finally { setSavingAdmin(false); setShowAdmin(false); }
   };
 
   const handleResetPoll = async () => {
-      if(window.confirm(t.resetConfirm)) {
+      // Usando uma modal customizada em vez de window.confirm
+      const modal = document.createElement('div');
+      modal.className = "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4";
+      modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm text-center">
+          <p class="mb-4">${t.resetConfirm}</p>
+          <div class="flex justify-center gap-4">
+            <button id="confirmReset" class="bg-red-600 text-white px-4 py-2 rounded-lg">Sim, Zerar</button>
+            <button id="cancelReset" class="bg-gray-300 px-4 py-2 rounded-lg">Cancelar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      document.getElementById('confirmReset').onclick = async () => {
           const pollDocRef = doc(db, 'polls', 'currentPoll');
           try {
-              await updateDoc(pollDocRef, {
-                  'model1.votes': 0,
-                  'model2.votes': 0,
-              });
-              // Limpa o registro de voto localmente para permitir um novo voto na enquete zerada
+              await updateDoc(pollDocRef, { 'model1.votes': 0, 'model2.votes': 0 });
               localStorage.removeItem('votedPollId');
               setVoted(false);
-              alert("Votos da enquete zerados com sucesso!");
           } catch(error) {
               console.error("Erro ao zerar a enquete:", error);
-              alert("Ocorreu um erro ao zerar os votos.");
           }
-      }
+          document.body.removeChild(modal);
+      };
+
+      document.getElementById('cancelReset').onclick = () => {
+          document.body.removeChild(modal);
+      };
   }
 
   const handleLogout = async () => { await signOut(auth); window.location.hash = ''; };
