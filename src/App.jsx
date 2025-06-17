@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Heart, Globe, MessageCircle, Share2, Twitter, Facebook, Instagram, Save, X, Settings, Copy, Loader2, LogOut, RefreshCw, Clock, Award, Trash2, ThumbsUp } from 'lucide-react';
+import { Heart, Globe, MessageCircle, Share2, Twitter, Facebook, Instagram, Save, X, Settings, Copy, Loader2, LogOut, RefreshCw, Clock, Award, Trash2, ThumbsUp, ChevronDown } from 'lucide-react';
 
 // Importações do Firebase
 import { initializeApp } from 'firebase/app';
@@ -376,7 +376,7 @@ const PollSite = ({ user, t, language, setLanguage }) => {
     e.preventDefault();
     if (!newComment.text.trim()) return;
     const finalNickname = newComment.nickname.trim() || 'Anônimo';
-    await addDoc(collection(db, 'comments'), { nickname: finalNickname, text: newComment.text, timestamp: new Date(), reactions: { '❤️': 0, '🔥': 0, '😂': 0, '👍': 0 } });
+    await addDoc(collection(db, 'comments'), { nickname: finalNickname, text: newComment.text, timestamp: new Date(), reactions: { '❤️': 0, '🔥': 0, '😂': 0, '�': 0 } });
     setNewComment({ nickname: '', text: '' });
   };
   
@@ -412,7 +412,7 @@ const PollSite = ({ user, t, language, setLanguage }) => {
         alert(`${winnerData.name} foi promovido a Vencedor do Dia!`);
     }
   };
-  
+
   const handleRemoveWinner = async () => {
     const confirm = window.confirm(t.removeWinnerConfirm);
     if (confirm) {
@@ -466,7 +466,15 @@ const PollSite = ({ user, t, language, setLanguage }) => {
       <header className="flex items-center justify-between p-4 border-b bg-white/70 backdrop-blur-lg sticky top-0 z-10">
         <h1 className="text-3xl font-bold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-rose-400 animate-background-pan">IGAROTO</h1>
         <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2"><Globe size={20} className="text-gray-500" /><select value={language} onChange={(e) => setLanguage(e.target.value)} className="bg-transparent border-none text-gray-700 focus:outline-none"><option value="pt">PT</option><option value="en">EN</option><option value="es">ES</option></select></div>
+            <div className="relative flex items-center">
+                <Globe size={16} className="absolute left-3 text-gray-500 pointer-events-none" />
+                <select value={language} onChange={(e) => setLanguage(e.target.value)} className="bg-gray-100 border-gray-200 rounded-full text-sm py-1 pl-9 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-pink-500">
+                    <option value="pt">Português</option>
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                </select>
+                <ChevronDown size={16} className="absolute right-3 text-gray-500 pointer-events-none" />
+            </div>
             {user && (<button onClick={handleLogout} className="flex items-center gap-2 text-sm text-gray-600 hover:text-pink-600"><LogOut size={16} /> {t.logoutButton}</button>)}
         </div>
       </header>
@@ -585,3 +593,4 @@ style.innerHTML = `
 }
 `;
 document.head.appendChild(style);
+�
