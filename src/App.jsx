@@ -376,7 +376,7 @@ const PollSite = ({ user, t, language, setLanguage }) => {
     e.preventDefault();
     if (!newComment.text.trim()) return;
     const finalNickname = newComment.nickname.trim() || 'Anônimo';
-    await addDoc(collection(db, 'comments'), { nickname: finalNickname, text: newComment.text, timestamp: new Date(), reactions: { '❤️': 0, '🔥': 0, '😂': 0, '�': 0 } });
+    await addDoc(collection(db, 'comments'), { nickname: finalNickname, text: newComment.text, timestamp: new Date(), reactions: { '❤️': 0, '🔥': 0, '😂': 0, '👍': 0 } });
     setNewComment({ nickname: '', text: '' });
   };
   
@@ -593,4 +593,3 @@ style.innerHTML = `
 }
 `;
 document.head.appendChild(style);
-�
