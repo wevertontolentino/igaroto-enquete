@@ -65,8 +65,88 @@ const translations = {
     votes: "dos votos",
     pastPollsTitle: "Enquetes Anteriores",
   },
-  en: { /* Traduções completas em Inglês */ },
-  es: { /* Traduções completas em Espanhol */ },
+  en: {
+    title: "Which model do you want to see on IGAROTO's feed tomorrow?",
+    vote: "Vote",
+    comments: "Comments",
+    nickname: "Nickname (optional)",
+    commentPlaceholder: "Write your comment...",
+    submitComment: "Comment",
+    adminPanel: "Admin Panel",
+    adminTitle: "Content Management",
+    model1Name: "Model 1 Name:",
+    model1Photo: "Model 1 Photo URL:",
+    model2Name: "Model 2 Name:",
+    model2Photo: "Model 2 Photo URL:",
+    enableCountdown: "Enable 24h Countdown",
+    saveChanges: "Save & Start New Poll",
+    adminButton: "Admin",
+    loading: "Loading poll...",
+    loginTitle: "Admin Access",
+    emailLabel: "Email",
+    passwordLabel: "Password",
+    loginButton: "Login",
+    logoutButton: "Logout",
+    loginError: "Incorrect email or password.",
+    socialShare: "Share the poll!",
+    shareOnInstagram: "Share on Instagram",
+    instagramInstruction: "Instagram doesn't allow direct sharing to Stories from websites. Take a screenshot of the poll and use the text below!",
+    copyText: "Copy Text",
+    copied: "Copied!",
+    resetPoll: "Reset Poll Votes",
+    resetConfirm: "Are you sure you want to reset all votes for this poll? This action cannot be undone.",
+    confirmButton: "Yes, Reset",
+    cancelButton: "Cancel",
+    countdownTitle: "THE POLL ENDS IN",
+    countdownEnded: "POLL CLOSED",
+    pastWinnerTitle: "Winner of the Day",
+    promoteWinner: "Promote Current Winner",
+    promoteConfirm: "This will set the model with the most votes as the 'Winner of the Day'. Do you want to continue?",
+    wonWith: "Won with",
+    votes: "of the votes",
+    pastPollsTitle: "Previous Polls",
+  },
+  es: {
+    title: "¿Qué modelo quieres ver mañana en el feed de IGAROTO?",
+    vote: "Votar",
+    comments: "Comentarios",
+    nickname: "Apodo (opcional)",
+    commentPlaceholder: "Escribe tu comentario...",
+    submitComment: "Comentar",
+    adminPanel: "Panel de Administración",
+    adminTitle: "Gestión de Contenido",
+    model1Name: "Nombre del Modelo 1:",
+    model1Photo: "URL de la Foto del Modelo 1:",
+    model2Name: "Nombre del Modelo 2:",
+    model2Photo: "URL de la Foto del Modelo 2:",
+    enableCountdown: "Activar Cuenta Regresiva de 24h",
+    saveChanges: "Guardar e Iniciar Nueva Encuesta",
+    adminButton: "Admin",
+    loading: "Cargando encuesta...",
+    loginTitle: "Acceso Administrativo",
+    emailLabel: "Email",
+    passwordLabel: "Contraseña",
+    loginButton: "Entrar",
+    logoutButton: "Salir",
+    loginError: "Email o contraseña incorrectos.",
+    socialShare: "¡Comparte la encuesta!",
+    shareOnInstagram: "Compartir en Instagram",
+    instagramInstruction: "Instagram no permite compartir directamente en Stories desde sitios web. ¡Toma una captura de pantalla de la encuesta y usa el texto a continuación!",
+    copyText: "Copiar Texto",
+    copied: "¡Copiado!",
+    resetPoll: "Reiniciar Votos de la Encuesta",
+    resetConfirm: "¿Estás seguro de que quieres reiniciar todos los votos de esta encuesta? Esta acción no se puede deshacer.",
+    confirmButton: "Sí, Reiniciar",
+    cancelButton: "Cancelar",
+    countdownTitle: "LA VOTACIÓN TERMINA EN",
+    countdownEnded: "VOTACIÓN CERRADA",
+    pastWinnerTitle: "Ganador del Día",
+    promoteWinner: "Promover Ganador Actual",
+    promoteConfirm: "Esto establecerá el modelo con más votos como el 'Ganador del Día'. ¿Desea continuar?",
+    wonWith: "Ganó con",
+    votes: "de los votos",
+    pastPollsTitle: "Encuestas Anteriores",
+  },
 };
 
 // --- COMPONENTES ---
@@ -152,7 +232,7 @@ const FeaturedWinner = ({ t }) => {
     if (!winner || !winner.name) return null;
     const winnerDate = winner.promotedAt?.toDate ? winner.promotedAt.toDate().toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
     return (
-        <section className="max-w-xl mx-auto my-12 animate-fade-in">
+        <section className="max-w-lg mx-auto my-12 animate-fade-in">
             <div className="bg-gray-900 rounded-2xl p-6 shadow-2xl text-center relative overflow-hidden">
                  <div className="absolute inset-0 shiny-border-animation rounded-2xl"></div>
                 <h2 className="text-sm font-bold uppercase tracking-widest text-amber-400 mb-4 flex items-center justify-center gap-2 relative z-10"><Award size={18}/> {t.pastWinnerTitle}</h2>
@@ -287,7 +367,7 @@ const PollSite = ({ user, t, language, setLanguage }) => {
     e.preventDefault();
     if (!newComment.text.trim()) return;
     const finalNickname = newComment.nickname.trim() || 'Anônimo';
-    await addDoc(collection(db, 'comments'), { nickname: finalNickname, text: newComment.text, timestamp: new Date(), reactions: { '❤️': 0, '🔥': 0, '😂': 0, '👍': 0, '😍': 0 } });
+    await addDoc(collection(db, 'comments'), { nickname: finalNickname, text: newComment.text, timestamp: new Date(), reactions: { '❤️': 0, '🔥': 0, '😂': 0, '👍': 0 } });
     setNewComment({ nickname: '', text: '' });
   };
   
@@ -307,8 +387,8 @@ const PollSite = ({ user, t, language, setLanguage }) => {
   };
   
   const handlePromoteWinner = async () => {
-      const confirm = window.confirm(t.promoteConfirm);
-      if(confirm && pollData){
+    const confirm = window.confirm(t.promoteConfirm);
+    if(confirm && pollData){
         const totalVotes = (pollData.model1.votes || 0) + (pollData.model2.votes || 0);
         if(totalVotes === 0) { alert("Ninguém votou ainda!"); return; }
         const winnerData = (pollData.model1.votes || 0) >= (pollData.model2.votes || 0) ? pollData.model1 : pollData.model2;
@@ -321,7 +401,7 @@ const PollSite = ({ user, t, language, setLanguage }) => {
             promotedAt: serverTimestamp() 
         });
         alert(`${winnerData.name} foi promovido a Vencedor do Dia!`);
-      }
+    }
   };
 
   const handleLogout = async () => { await signOut(auth); window.location.hash = ''; };
@@ -387,7 +467,7 @@ const PollSite = ({ user, t, language, setLanguage }) => {
             </div>
             <div className="space-y-4">
                 {comments.map((comment) => (<div key={comment.id} className="bg-white/80 p-4 rounded-lg shadow-sm transition-all duration-500 animate-fade-in"><p className="font-bold text-pink-600">{comment.nickname}</p><p className="text-gray-600 whitespace-pre-wrap">{comment.text}</p><div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200 bg-gray-100/50 -mx-4 -mb-4 px-4 py-2 rounded-b-lg">
-                    {['❤️', '🔥', '😂', '👍', '😍'].map(emoji => {
+                    {['❤️', '🔥', '😂', '👍'].map(emoji => {
                         const hasReacted = !!localStorage.getItem(`reacted_${comment.id}`);
                         const reactedEmoji = localStorage.getItem(`reacted_emoji_${comment.id}`);
                         const isThisReacted = hasReacted && reactedEmoji === emoji;
