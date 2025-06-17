@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Heart, Globe, MessageCircle, Share2, Twitter, Facebook, Instagram, Save, X, Settings, Copy, Loader2, LogOut, RefreshCw, Clock, Award } from 'lucide-react';
+import { Heart, Globe, MessageCircle, Share2, Twitter, Facebook, Instagram, Save, X, Settings, Copy, Loader2, LogOut, RefreshCw, Clock, Award, Trash2, ThumbsUp } from 'lucide-react';
 
-// Importações do Firebase (com autenticação)
+// Importações do Firebase
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, getDoc, limit } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, onSnapshot, updateDoc, increment, collection, addDoc, query, orderBy, serverTimestamp, getDoc, limit, deleteDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 
 // --- CONFIGURAÇÃO DO FIREBASE ---
@@ -64,6 +64,9 @@ const translations = {
     wonWith: "Venceu com",
     votes: "dos votos",
     pastPollsTitle: "Enquetes Anteriores",
+    removeWinner: "Remover Vencedor em Destaque",
+    removeWinnerConfirm: "Tem certeza que deseja remover o vencedor em destaque?",
+    deleteCommentConfirm: "Tem certeza que deseja apagar este comentário?",
   },
   en: {
     title: "Which model do you want to see on IGAROTO's feed tomorrow?",
@@ -105,6 +108,9 @@ const translations = {
     wonWith: "Won with",
     votes: "of the votes",
     pastPollsTitle: "Previous Polls",
+    removeWinner: "Remove Featured Winner",
+    removeWinnerConfirm: "Are you sure you want to remove the featured winner?",
+    deleteCommentConfirm: "Are you sure you want to delete this comment?",
   },
   es: {
     title: "¿Qué modelo quieres ver mañana en el feed de IGAROTO?",
@@ -146,6 +152,9 @@ const translations = {
     wonWith: "Ganó con",
     votes: "de los votos",
     pastPollsTitle: "Encuestas Anteriores",
+    removeWinner: "Eliminar Ganador Destacado",
+    removeWinnerConfirm: "¿Estás seguro de que quieres eliminar el ganador destacado?",
+    deleteCommentConfirm: "¿Estás seguro de que quieres eliminar este comentario?",
   },
 };
 
@@ -403,6 +412,22 @@ const PollSite = ({ user, t, language, setLanguage }) => {
         alert(`${winnerData.name} foi promovido a Vencedor do Dia!`);
     }
   };
+  
+  const handleRemoveWinner = async () => {
+    const confirm = window.confirm(t.removeWinnerConfirm);
+    if (confirm) {
+      const winnerDocRef = doc(db, 'site_config', 'featuredWinner');
+      await deleteDoc(winnerDocRef);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    const confirm = window.confirm(t.deleteCommentConfirm);
+    if (confirm) {
+      const commentDocRef = doc(db, 'comments', commentId);
+      await deleteDoc(commentDocRef);
+    }
+  };
 
   const handleLogout = async () => { await signOut(auth); window.location.hash = ''; };
   const copyToClipboard = (text) => { navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }); };
@@ -430,6 +455,7 @@ const PollSite = ({ user, t, language, setLanguage }) => {
               </form>
               <div className="mt-6 border-t pt-6 space-y-3">
                   <button onClick={handlePromoteWinner} className="w-full bg-amber-500 hover:bg-amber-600 text-white p-3 rounded-lg flex items-center justify-center gap-2"><Award size={16} /> {t.promoteWinner}</button>
+                  <button onClick={handleRemoveWinner} className="w-full bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-lg flex items-center justify-center gap-2"><Trash2 size={16} /> {t.removeWinner}</button>
               </div>
             </div>
           </div>
@@ -466,7 +492,9 @@ const PollSite = ({ user, t, language, setLanguage }) => {
                 </form>
             </div>
             <div className="space-y-4">
-                {comments.map((comment) => (<div key={comment.id} className="bg-white/80 p-4 rounded-lg shadow-sm transition-all duration-500 animate-fade-in"><p className="font-bold text-pink-600">{comment.nickname}</p><p className="text-gray-600 whitespace-pre-wrap">{comment.text}</p><div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200 bg-gray-100/50 -mx-4 -mb-4 px-4 py-2 rounded-b-lg">
+                {comments.map((comment) => (<div key={comment.id} className="bg-white/80 p-4 rounded-lg shadow-sm transition-all duration-500 animate-fade-in relative group"><p className="font-bold text-pink-600">{comment.nickname}</p><p className="text-gray-600 whitespace-pre-wrap">{comment.text}</p>
+                {user && <button onClick={() => handleDeleteComment(comment.id)} className="absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={16} /></button>}
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200 bg-gray-100/50 -mx-4 -mb-4 px-4 py-2 rounded-b-lg">
                     {['❤️', '🔥', '😂', '👍'].map(emoji => {
                         const hasReacted = !!localStorage.getItem(`reacted_${comment.id}`);
                         const reactedEmoji = localStorage.getItem(`reacted_emoji_${comment.id}`);
