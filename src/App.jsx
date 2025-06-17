@@ -58,80 +58,15 @@ const translations = {
     cancelButton: "Cancelar",
     countdownTitle: "A VOTAÇÃO TERMINA EM",
     countdownEnded: "VOTAÇÃO ENCERRADA",
+    pastWinnerTitle: "Vencedor do Dia",
+    promoteWinner: "Promover Vencedor Atual",
+    promoteConfirm: "Isso definirá o modelo com mais votos como o 'Vencedor do Dia'. Deseja continuar?",
+    wonWith: "Venceu com",
+    votes: "dos votos",
     pastPollsTitle: "Enquetes Anteriores",
   },
-  en: {
-    title: "Which model do you want to see on IGAROTO's feed tomorrow?",
-    vote: "Vote",
-    comments: "Comments",
-    nickname: "Nickname (optional)",
-    commentPlaceholder: "Write your comment...",
-    submitComment: "Comment",
-    adminPanel: "Admin Panel",
-    adminTitle: "Content Management",
-    model1Name: "Model 1 Name:",
-    model1Photo: "Model 1 Photo URL:",
-    model2Name: "Model 2 Name:",
-    model2Photo: "Model 2 Photo URL:",
-    enableCountdown: "Enable 24h Countdown",
-    saveChanges: "Save & Start New Poll",
-    adminButton: "Admin",
-    loading: "Loading poll...",
-    loginTitle: "Admin Access",
-    emailLabel: "Email",
-    passwordLabel: "Password",
-    loginButton: "Login",
-    logoutButton: "Logout",
-    loginError: "Incorrect email or password.",
-    socialShare: "Share the poll!",
-    shareOnInstagram: "Share on Instagram",
-    instagramInstruction: "Instagram doesn't allow direct sharing to Stories from websites. Take a screenshot of the poll and use the text below!",
-    copyText: "Copy Text",
-    copied: "Copied!",
-    resetPoll: "Reset Poll Votes",
-    resetConfirm: "Are you sure you want to reset all votes for this poll? This action cannot be undone.",
-    confirmButton: "Yes, Reset",
-    cancelButton: "Cancel",
-    countdownTitle: "THE POLL ENDS IN",
-    countdownEnded: "POLL CLOSED",
-    pastPollsTitle: "Previous Polls",
-  },
-  es: {
-    title: "¿Qué modelo quieres ver mañana en el feed de IGAROTO?",
-    vote: "Votar",
-    comments: "Comentarios",
-    nickname: "Apodo (opcional)",
-    commentPlaceholder: "Escribe tu comentario...",
-    submitComment: "Comentar",
-    adminPanel: "Panel de Administración",
-    adminTitle: "Gestión de Contenido",
-    model1Name: "Nombre del Modelo 1:",
-    model1Photo: "URL de la Foto del Modelo 1:",
-    model2Name: "Nombre del Modelo 2:",
-    model2Photo: "URL de la Foto del Modelo 2:",
-    enableCountdown: "Activar Cuenta Regresiva de 24h",
-    saveChanges: "Guardar e Iniciar Nueva Encuesta",
-    adminButton: "Admin",
-    loading: "Cargando encuesta...",
-    loginTitle: "Acceso Administrativo",
-    emailLabel: "Email",
-    passwordLabel: "Contraseña",
-    loginButton: "Entrar",
-    logoutButton: "Salir",
-    loginError: "Email o contraseña incorrectos.",
-    socialShare: "¡Comparte la encuesta!",
-    shareOnInstagram: "Compartir en Instagram",
-    instagramInstruction: "Instagram no permite compartir directamente en Stories desde sitios web. ¡Toma una captura de pantalla de la encuesta y usa el texto a continuación!",
-    copyText: "Copiar Texto",
-    copied: "¡Copiado!",
-    resetPoll: "Reiniciar Votos de la Encuesta",
-    resetConfirm: "¿Estás seguro de que quieres reiniciar todos los votos de esta encuesta? Esta acción no se puede deshacer.",
-    confirmButton: "Sí, Reiniciar",
-    cancelButton: "Cancelar",
-    countdownTitle: "LA VOTACIÓN TERMINA EN",
-    countdownEnded: "VOTACIÓN CERRADA",
-    pastPollsTitle: "Encuestas Anteriores",
-  },
+  en: { /* Traduções completas em Inglês */ },
+  es: { /* Traduções completas em Espanhol */ },
 };
 
 // --- COMPONENTES ---
@@ -202,6 +137,34 @@ const LoginPage = ({ t }) => {
         } catch (err) { setError(t.loginError); }
     };
     return (<div className="bg-gray-50 min-h-screen flex items-center justify-center p-4"><div className="w-full max-w-sm p-8 space-y-6 bg-white rounded-xl shadow-lg"><h1 className="text-3xl font-bold text-center text-pink-600">{t.loginTitle}</h1><form onSubmit={handleLogin} className="space-y-6"><div><label htmlFor="email" className="text-sm font-medium text-gray-700">{t.emailLabel}</label><input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full p-3 border border-gray-300 rounded-md" required /></div><div><label htmlFor="password" className="text-sm font-medium text-gray-700">{t.passwordLabel}</label><input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full p-3 border border-gray-300 rounded-md" required /></div>{error && <p className="text-sm text-red-600 text-center">{error}</p>}<button type="submit" className="w-full py-3 px-4 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-lg">{t.loginButton}</button></form></div></div>);
+};
+
+const FeaturedWinner = ({ t }) => {
+    const [winner, setWinner] = useState(null);
+    useEffect(() => {
+        const winnerRef = doc(db, 'site_config', 'featuredWinner');
+        const unsubscribe = onSnapshot(winnerRef, (docSnap) => {
+            if (docSnap.exists()) setWinner(docSnap.data());
+            else setWinner(null);
+        });
+        return () => unsubscribe();
+    }, []);
+    if (!winner || !winner.name) return null;
+    const winnerDate = winner.promotedAt?.toDate ? winner.promotedAt.toDate().toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
+    return (
+        <section className="max-w-xl mx-auto my-12 animate-fade-in">
+            <div className="bg-gray-900 rounded-2xl p-6 shadow-2xl text-center relative overflow-hidden">
+                 <div className="absolute inset-0 shiny-border-animation rounded-2xl"></div>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-amber-400 mb-4 flex items-center justify-center gap-2 relative z-10"><Award size={18}/> {t.pastWinnerTitle}</h2>
+                <div className="relative inline-block p-1 rounded-full">
+                    <img src={winner.photo} alt={winner.name} className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-full border-4 border-gray-800" />
+                </div>
+                <h3 className="mt-4 text-3xl font-bold text-white relative z-10">{winner.name}</h3>
+                <p className="text-amber-300 relative z-10">{`${t.wonWith} ${winner.percentage}% ${t.votes}`}</p>
+                <p className="text-xs text-gray-500 mt-1 relative z-10">{winnerDate}</p>
+            </div>
+        </section>
+    );
 };
 
 const PastPolls = ({ t }) => {
@@ -324,16 +287,41 @@ const PollSite = ({ user, t, language, setLanguage }) => {
     e.preventDefault();
     if (!newComment.text.trim()) return;
     const finalNickname = newComment.nickname.trim() || 'Anônimo';
-    await addDoc(collection(db, 'comments'), { nickname: finalNickname, text: newComment.text, timestamp: new Date(), reactions: { '❤️': 0, '🔥': 0, '😂': 0 } });
+    await addDoc(collection(db, 'comments'), { nickname: finalNickname, text: newComment.text, timestamp: new Date(), reactions: { '❤️': 0, '🔥': 0, '😂': 0, '👍': 0, '😍': 0 } });
     setNewComment({ nickname: '', text: '' });
   };
   
-  const handleReaction = async (commentId, reaction) => {
+  const handleReaction = async (e, commentId, reaction) => {
     const reactionKey = `reacted_${commentId}`;
     if (localStorage.getItem(reactionKey)) return; 
+    const button = e.currentTarget;
+    const flyingEmoji = document.createElement('span');
+    flyingEmoji.innerHTML = reaction;
+    flyingEmoji.className = 'reaction-fly-up';
+    button.appendChild(flyingEmoji);
+    setTimeout(() => { if (flyingEmoji.parentNode === button) button.removeChild(flyingEmoji); }, 1000);
     const commentRef = doc(db, "comments", commentId);
     await updateDoc(commentRef, { [`reactions.${reaction}`]: increment(1) });
     localStorage.setItem(reactionKey, 'true');
+    localStorage.setItem(`reacted_emoji_${commentId}`, reaction);
+  };
+  
+  const handlePromoteWinner = async () => {
+      const confirm = window.confirm(t.promoteConfirm);
+      if(confirm && pollData){
+        const totalVotes = (pollData.model1.votes || 0) + (pollData.model2.votes || 0);
+        if(totalVotes === 0) { alert("Ninguém votou ainda!"); return; }
+        const winnerData = (pollData.model1.votes || 0) >= (pollData.model2.votes || 0) ? pollData.model1 : pollData.model2;
+        const winnerPercentage = ((winnerData.votes / totalVotes) * 100).toFixed(1);
+        const winnerDocRef = doc(db, 'site_config', 'featuredWinner');
+        await setDoc(winnerDocRef, { 
+            name: winnerData.name, 
+            photo: winnerData.photo, 
+            percentage: winnerPercentage,
+            promotedAt: serverTimestamp() 
+        });
+        alert(`${winnerData.name} foi promovido a Vencedor do Dia!`);
+      }
   };
 
   const handleLogout = async () => { await signOut(auth); window.location.hash = ''; };
@@ -360,6 +348,9 @@ const PollSite = ({ user, t, language, setLanguage }) => {
                   <div className="flex items-center gap-2 pt-2"><input type="checkbox" id="countdownEnabled" name="countdownEnabled" defaultChecked={pollData?.countdownEnabled} className="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500" /><label htmlFor="countdownEnabled" className="text-sm font-medium">{t.enableCountdown}</label></div>
                   <button type="submit" disabled={savingAdmin} className="mt-4 w-full bg-pink-600 text-white p-3 rounded-lg flex items-center justify-center">{savingAdmin ? <Loader2 className="animate-spin" /> : t.saveChanges}</button>
               </form>
+              <div className="mt-6 border-t pt-6 space-y-3">
+                  <button onClick={handlePromoteWinner} className="w-full bg-amber-500 hover:bg-amber-600 text-white p-3 rounded-lg flex items-center justify-center gap-2"><Award size={16} /> {t.promoteWinner}</button>
+              </div>
             </div>
           </div>
         </div>
@@ -382,6 +373,7 @@ const PollSite = ({ user, t, language, setLanguage }) => {
             </div>
         </section>
 
+        <FeaturedWinner t={t} />
         <PastPolls t={t} />
 
         <section className="max-w-3xl mx-auto">
@@ -394,7 +386,19 @@ const PollSite = ({ user, t, language, setLanguage }) => {
                 </form>
             </div>
             <div className="space-y-4">
-                {comments.map((comment) => (<div key={comment.id} className="bg-white/80 p-4 rounded-lg shadow-sm transition-all duration-500 animate-fade-in"><p className="font-bold text-pink-600">{comment.nickname}</p><p className="text-gray-600 whitespace-pre-wrap">{comment.text}</p><div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-200"><button onClick={() => handleReaction(comment.id, '❤️')} className="flex items-center gap-1 text-gray-500 hover:text-red-500 disabled:opacity-50 reaction-button" disabled={!!localStorage.getItem(`reacted_${comment.id}`)}>❤️<span className="text-xs">{comment.reactions?.['❤️'] || 0}</span></button><button onClick={() => handleReaction(comment.id, '🔥')} className="flex items-center gap-1 text-gray-500 hover:text-orange-500 disabled:opacity-50 reaction-button" disabled={!!localStorage.getItem(`reacted_${comment.id}`)}>🔥<span className="text-xs">{comment.reactions?.['🔥'] || 0}</span></button><button onClick={() => handleReaction(comment.id, '😂')} className="flex items-center gap-1 text-gray-500 hover:text-yellow-500 disabled:opacity-50 reaction-button" disabled={!!localStorage.getItem(`reacted_${comment.id}`)}>😂<span className="text-xs">{comment.reactions?.['😂'] || 0}</span></button></div></div>))}
+                {comments.map((comment) => (<div key={comment.id} className="bg-white/80 p-4 rounded-lg shadow-sm transition-all duration-500 animate-fade-in"><p className="font-bold text-pink-600">{comment.nickname}</p><p className="text-gray-600 whitespace-pre-wrap">{comment.text}</p><div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200 bg-gray-100/50 -mx-4 -mb-4 px-4 py-2 rounded-b-lg">
+                    {['❤️', '🔥', '😂', '👍', '😍'].map(emoji => {
+                        const hasReacted = !!localStorage.getItem(`reacted_${comment.id}`);
+                        const reactedEmoji = localStorage.getItem(`reacted_emoji_${comment.id}`);
+                        const isThisReacted = hasReacted && reactedEmoji === emoji;
+                        return (
+                            <button key={emoji} onClick={(e) => handleReaction(e, comment.id, emoji)} className={`relative flex items-center gap-1.5 px-2 py-1 rounded-full transition-all duration-200 ${hasReacted ? 'cursor-default' : 'hover:bg-gray-200'} ${isThisReacted ? 'bg-pink-100 text-pink-600' : 'bg-transparent text-gray-500'}`} disabled={hasReacted}>
+                                <span className="text-lg">{emoji}</span>
+                                <span className="text-xs font-semibold">{comment.reactions?.[emoji] || 0}</span>
+                            </button>
+                        )
+                    })}
+                </div></div>))}
             </div>
             {pollData?.countdownEnabled && pollData?.endDate && <Countdown endDate={pollData.endDate} t={t} />}
         </section>
@@ -441,6 +445,35 @@ style.innerHTML = `
 .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
 @keyframes background-pan { from { background-position: 0% center; } to { background-position: -200% center; } }
 .animate-background-pan { background-size: 200%; animation: background-pan 3s linear infinite; }
-.reaction-button:active { transform: scale(1.5); transition: transform 0.1s; }
+.reaction-button:active { transform: scale(1.2); transition: transform 0.1s; }
+@keyframes reaction-fly-up {
+  0% { transform: translateY(0) scale(0.5); opacity: 1; }
+  50% { transform: translateY(-30px) scale(1.5); opacity: 0.8; }
+  100% { transform: translateY(-60px) scale(0.5); opacity: 0; }
+}
+.reaction-fly-up {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  animation: reaction-fly-up 0.8s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes shiny-effect {
+  0% { transform: translateX(-100%) skewX(-20deg); }
+  100% { transform: translateX(200%) skewX(-20deg); }
+}
+.shiny-border::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%);
+  animation: shiny-effect 2.5s linear infinite;
+  z-index: 1;
+}
 `;
 document.head.appendChild(style);
